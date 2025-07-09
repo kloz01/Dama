@@ -12,14 +12,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.web.cors.CorsConfiguration; // Import this
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource; // Import this
+import org.springframework.web.filter.CorsFilter; // Import this
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
-// Import static methods for HTTP methods if you uncomment the commented lines later
-// import static org.springframework.http.HttpMethod.DELETE;
-// import static org.springframework.http.HttpMethod.GET;
-// import static org.springframework.http.HttpMethod.POST;
-// import static org.springframework.http.HttpMethod.PUT;
-
 
 @Configuration
 @EnableWebSecurity
@@ -27,7 +24,6 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-    // Array of URLs that do not require authentication (whitelisted)
     private static final String[] WHITE_LIST_URL = {
             "/api/v1/auth/**",
             "/v2/api-docs",
@@ -42,44 +38,47 @@ public class SecurityConfiguration {
             "/swagger-ui.html"
     };
 
-    // Dependencies injected via constructor
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
     private final LogoutHandler logoutHandler;
 
-    /**
-     * Configures the security filter chain for the application.
-     *
-     * @param http The HttpSecurity object to configure.
-     * @return A SecurityFilterChain instance.
-     * @throws Exception If an error occurs during configuration.
-     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                // Apply CORS configuration first
+                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Add this line
                 .authorizeHttpRequests(req ->
-                        req.requestMatchers(WHITE_LIST_URL) 
+                        req.requestMatchers(WHITE_LIST_URL)
                                 .permitAll()
-                                /*
-                                .requestMatchers(GET, "/api/v1/management/**").hasAnyAuthority(ADMIN_READ.name(), MANAGER_READ.name())
-                                .requestMatchers(POST, "/api/v1/management/**").hasAnyAuthority(ADMIN_CREATE.name(), MANAGER_CREATE.name())
-                                .requestMatchers(PUT, "/api/v1/management/**").hasAnyAuthority(ADMIN_UPDATE.name(), MANAGER_UPDATE.name())
-                                .requestMatchers(DELETE, "/api/v1/management/**").hasAnyAuthority(ADMIN_DELETE.name(), MANAGER_DELETE.name())
-                                */
-                                .anyRequest() // Any other request
-                                .authenticated() // Must be authenticated
+                                .anyRequest()
+                                .authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(logout ->
-                        logout.logoutUrl("/api/v1/auth/logout") // Specify the logout URL
-                                .addLogoutHandler(logoutHandler) // Add a custom logout handler
-                                // On successful logout, clear the security context
+                        logout.logoutUrl("/api/v1/auth/logout")
+                                .addLogoutHandler(logoutHandler)
                                 .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
                 );
 
         return http.build();
+    }
+
+    // Define the CORS configuration source bean
+    @Bean
+    public UrlBasedCorsConfigurationSource corsConfigurationSource() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        // Replace "http://localhost:3000" with the actual origin of your frontend application
+        // If your frontend is running on a different port or domain, you must specify it here.
+        // For development, you can use "*" but it's not recommended for production.
+        config.addAllowedOrigin("http://localhost:3000"); // Example: React app often runs on 3000
+        config.addAllowedHeader("*"); // Allow all headers
+        config.addAllowedMethod("*"); // Allow all HTTP methods (GET, POST, PUT, DELETE, OPTIONS, etc.)
+        source.registerCorsConfiguration("/**", config); // Apply this CORS configuration to all paths
+        return source;
     }
 }

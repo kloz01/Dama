@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.dama.backend.dama.model.Role;
 import com.dama.backend.dama.repository.UserRepository;
 import com.dama.backend.dama.service.JwtService;
+import com.dama.backend.dama.repository.RoleRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,17 +21,19 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final RoleRepository roleRepository;
     
     public AuthenticationResponse register(RegisterRequest request)
     {
-        var role= new Role();
+        Role defaultRole = roleRepository.findById(2)
+                                        .orElseThrow(() -> new RuntimeException("Role with ID 2 not found"));
         var user = User.builder()
         .name(request.getName())
         .surname(request.getSurname())
         .email(request.getEmail())
         .username(request.getUsername())
         .password(passwordEncoder.encode(request.getPassword()))
-        .role(role)
+        .role(defaultRole)
         .build();
         repository.save(user);
         var jwtToken = jwtService.generateToken(user);
