@@ -11,6 +11,8 @@ import com.dama.backend.dama.model.Role;
 import com.dama.backend.dama.repository.UserRepository;
 import com.dama.backend.dama.service.JwtService;
 import com.dama.backend.dama.repository.RoleRepository;
+import com.dama.backend.dama.repository.TokenRepository;
+import com.dama.backend.dama.model.Token;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthenticationService {
     private final UserRepository repository;
+    private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
@@ -37,7 +40,6 @@ public class AuthenticationService {
         .build();
         repository.save(user);
         var jwtToken = jwtService.generateToken(user);
-
         return AuthenticationResponse.builder()
         .accessToken(jwtToken)
         .build();
@@ -48,8 +50,28 @@ public class AuthenticationService {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         var user = repository.findByUsername(request.getUsername()).orElseThrow();
         var jwtToken= jwtService.generateToken(user);
+        revokeAllUserTokens(user);
+        saveUserToken(user, jwtToken);
         return AuthenticationResponse.builder().accessToken(jwtToken).build();
     }
-
+    private void saveUserToken(User user, String jwtToken) {
+        var token = Token.builder()
+            .user(user)
+            .token(jwtToken)
+            .expired(false)
+            .revoked(false)
+            .build();
+        tokenRepository.save(token);
+    }
+      private void revokeAllUserTokens(User user) {
+            var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
+            if (validUserTokens.isEmpty())
+            return;
+            validUserTokens.forEach(token -> {
+                token.setExpired(true);
+                token.setRevoked(true);
+                });
+            tokenRepository.saveAll(validUserTokens);
+        }
     
 }

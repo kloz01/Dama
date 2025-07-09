@@ -18,7 +18,7 @@ import io.jsonwebtoken.security.Keys;
 @Service
 
 public class JwtService {
-     private static final String SECRET_KEY= "D5EA55EA74AB3D1D84B25BB8313BD";
+     private static final String SECRET_KEY= "D5EA55EA74AB3D1D84B25BB8313BDHF654HG95G5U9JI5G5U9HF4H84H9F";
     public String extractUsername(String token)
     {
         return extractClaim(token, Claims::getSubject);
