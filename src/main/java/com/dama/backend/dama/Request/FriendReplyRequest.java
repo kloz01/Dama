@@ -2,7 +2,6 @@ package com.dama.backend.dama.Request;
 
 
 import com.dama.backend.dama.model.FriendRequest;
-import com.dama.backend.dama.model.FriendRequestStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,6 +14,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FriendReplyRequest {
-    private FriendRequestStatus status;
+    private Integer status;
     private FriendRequest friendRequest;
 }

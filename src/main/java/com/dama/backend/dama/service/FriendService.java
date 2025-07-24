@@ -62,7 +62,7 @@ public class FriendService {
     }
 
     public void manageFriendRequest(FriendReplyRequest request) {
-        if (request.getStatus().getId().equals(2)) { // Assuming status ID 2 means "Accepted"
+        if (request.getStatus().equals(2)) { // Assuming status ID 2 means "Accepted"
             var friend = Friend.builder()
                     .user1(request.getFriendRequest().getSender())
                     .user2(request.getFriendRequest().getReceiver())
@@ -76,13 +76,12 @@ public class FriendService {
             friendRequestToUpdate.setFriendRequestStatus(acceptedStatus);
             friendRequestRepository.save(friendRequestToUpdate);
 
-        } else {
-            // If not accepted (e.g., rejected), delete the friend request
-            friendRequestRepository.delete(
-                    friendRequestRepository.findById(request.getFriendRequest().getId())
-                            .orElseThrow(() -> new EntityNotFoundException("FriendRequest not found for deletion."))
-            );
-        }
+        } 
+        friendRequestRepository.delete(
+                friendRequestRepository.findById(request.getFriendRequest().getId())
+                        .orElseThrow(() -> new EntityNotFoundException("FriendRequest not found for deletion."))
+        );
+        
     }
 
     public List<UserDTO> searchUsers(String query) {
@@ -107,6 +106,46 @@ public class FriendService {
             return userDTOs;
         } catch (Exception e) {
             logger.error("An error occurred while searching for users with query: {}", query, e);
+            throw new RuntimeException("Error searching users: " + e.getMessage(), e);
+        }
+    }
+
+        public List<UserDTO> userSentRequests(User user) {
+        try {
+            List<FriendRequest> foundUsers = friendRequestRepository.findBySender(user);
+
+            List<UserDTO> userDTOs = foundUsers.stream()
+                    .map(sender -> UserDTO.builder()
+                            .id(sender.getSender().getId())
+                            .username(sender.getSender().getUsername())
+                            .name(sender.getSender().getName())
+                            .surname(sender.getSender().getSurname())
+                            .email(sender.getSender().getEmail())
+                            .build())
+                    .collect(toList());
+            logger.debug("Converted {} users to UserDTOs.", userDTOs.size());
+            return userDTOs;
+        } catch (Exception e) {
+            throw new RuntimeException("Error searching users: " + e.getMessage(), e);
+        }
+    }
+    
+    public List<UserDTO> userRequests(User user) {
+        try {
+            List<FriendRequest> foundUsers = friendRequestRepository.findByReceiver(user);
+
+            List<UserDTO> userDTOs = foundUsers.stream()
+                    .map(sender -> UserDTO.builder()
+                            .id(sender.getReceiver().getId())
+                            .username(sender.getReceiver().getUsername())
+                            .name(sender.getReceiver().getName())
+                            .surname(sender.getReceiver().getSurname())
+                            .email(sender.getReceiver().getEmail())
+                            .build())
+                    .collect(toList());
+            logger.debug("Converted {} users to UserDTOs.", userDTOs.size());
+            return userDTOs;
+        } catch (Exception e) {
             throw new RuntimeException("Error searching users: " + e.getMessage(), e);
         }
     }
