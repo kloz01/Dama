@@ -2,6 +2,7 @@ package com.dama.backend.dama.service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import static java.util.stream.Collectors.toList;
 
 import org.slf4j.Logger; // Import @Autowired
@@ -62,26 +63,21 @@ public class FriendService {
     }
 
     public void manageFriendRequest(FriendReplyRequest request) {
-        if (request.getStatus().equals(2)) { // Assuming status ID 2 means "Accepted"
+        if (request.getStatus().equals(2)) {
+            Optional<FriendRequest> optionalFriendRequest = friendRequestRepository.findById(request.getFriendRequestID());
+            if (optionalFriendRequest.isPresent()) {
+            FriendRequest  friendRequest = optionalFriendRequest.get();
             var friend = Friend.builder()
-                    .user1(request.getFriendRequest().getSender())
-                    .user2(request.getFriendRequest().getReceiver())
+                    .user1(friendRequest.getSender())
+                    .user2(friendRequest.getReceiver())
                     .build();
-            friendRepository.save(friend);
-
-            FriendRequest friendRequestToUpdate = friendRequestRepository.findById(request.getFriendRequest().getId())
-                .orElseThrow(() -> new EntityNotFoundException("FriendRequest not found for update."));
-            FriendRequestStatus acceptedStatus = statusRepository.findById(2) // Assuming 2 is 'Accepted'
-                .orElseThrow(() -> new RuntimeException("FriendRequestStatus with ID 2 (Accepted Status) not found."));
-            friendRequestToUpdate.setFriendRequestStatus(acceptedStatus);
-            friendRequestRepository.save(friendRequestToUpdate);
-
+                friendRepository.save(friend);
+            }
         } 
         friendRequestRepository.delete(
-                friendRequestRepository.findById(request.getFriendRequest().getId())
+                friendRequestRepository.findById(request.getFriendRequestID())
                         .orElseThrow(() -> new EntityNotFoundException("FriendRequest not found for deletion."))
         );
-        
     }
 
     public List<UserDTO> searchUsers(String query) {
