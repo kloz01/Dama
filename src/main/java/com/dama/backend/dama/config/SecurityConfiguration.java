@@ -14,7 +14,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.cors.CorsConfiguration; // Import this
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource; // Import this
-import org.springframework.web.filter.CorsFilter; // Import this
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 

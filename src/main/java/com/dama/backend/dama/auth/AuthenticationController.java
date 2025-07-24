@@ -12,6 +12,7 @@ import com.dama.backend.dama.auth.LogoutService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 
 
 @RestController
@@ -22,10 +23,8 @@ public class AuthenticationController {
   private final AuthenticationService service;
   private final LogoutService logoutService;
 
-  @PostMapping("/register")
-  public ResponseEntity<AuthenticationResponse> register(
-      @RequestBody RegisterRequest request
-  ) {
+  @PostMapping("/register") public ResponseEntity<AuthenticationResponse> register
+  (@Valid @RequestBody RegisterRequest request) {
     return ResponseEntity.ok(service.register(request));
   }
   @PostMapping("/login")

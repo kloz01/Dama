@@ -6,13 +6,17 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.dama.backend.dama.model.Friend;
 import com.dama.backend.dama.model.Role;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -40,6 +44,10 @@ public class User implements UserDetails{
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+
+    @ManyToMany(mappedBy="users", cascade=CascadeType.ALL) //todo controlla orphan.removal con n a n
+    @JsonManagedReference
+    private List<Friend> friends;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
