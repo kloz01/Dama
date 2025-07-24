@@ -46,24 +46,26 @@ public class User implements UserDetails {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    // This user is user1 in these friendship records
     @OneToMany(mappedBy = "user1", cascade = CascadeType.ALL) // Removed orphanRemoval for now, add if needed
     private List<Friend> friendshipsInitiated; // Renamed for clarity
 
-    // This user is user2 in these friendship records
+   
     @OneToMany(mappedBy = "user2", cascade = CascadeType.ALL) // Removed orphanRemoval for now, add if needed
     private List<Friend> friendshipsReceived; // Renamed for clarity
 
-    // Important: REMOVE THE OLD @ManyToMany "friends" field!
-    // @ManyToMany(mappedBy="users", cascade=CascadeType.ALL)
-    // @JsonManagedReference
-    // private List<Friend> friends;
 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.getName()));
+        String roleName = (role != null && role.getName() != null) ? role.getName() : "ROLE_USER";
+        return List.of(new SimpleGrantedAuthority(roleName));
     }
+
+
+   // @Override
+   // public Collection<? extends GrantedAuthority> getAuthorities() {
+   //     return List.of(new SimpleGrantedAuthority(role.getName()));
+   // }
 
     @Override
     public String getUsername() {

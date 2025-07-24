@@ -7,8 +7,17 @@ spring:
   jpa:
     show-sql: true
     database: postgresql
-    hibernate: 
-      ddl-auto : update
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: 8081
+logging:
+  level:
+    com:
+      dama:
+        backend:
+          dama: DEBUG

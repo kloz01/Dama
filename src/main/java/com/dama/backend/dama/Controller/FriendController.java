@@ -1,6 +1,10 @@
 package com.dama.backend.dama.Controller;
+
+import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -8,8 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam; // Import Logger
+import org.springframework.web.bind.annotation.RestController; // Import LoggerFactory
 
 import com.dama.backend.dama.Request.FriendReplyRequest;
 import com.dama.backend.dama.Request.FriendRequestRequest;
@@ -21,49 +25,62 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/v1/dama2077/friends")
+@RequestMapping("/api/v1/friends")
 @RequiredArgsConstructor
 public class FriendController {
-      private final FriendService service;
-@PostMapping("/sendRequest")
+
+    private static final Logger logger = LoggerFactory.getLogger(FriendController.class); // Initialize logger
+
+    private final FriendService service;
+
+    @PostMapping("/sendRequest")
     public ResponseEntity<String> sendFriendRequest(
             @Valid @RequestBody FriendRequestRequest request,
-            @AuthenticationPrincipal User currentUser 
+            @AuthenticationPrincipal User currentUser
     ) {
         if (currentUser == null) {
             return new ResponseEntity<>("User not authenticated.", HttpStatus.UNAUTHORIZED);
         }
 
         try {
-            // Passa l'intero oggetto User al servizio
             service.sendFriendRequest(request, currentUser);
             return new ResponseEntity<>("Friend request sent successfully!", HttpStatus.OK);
         } catch (RuntimeException e) {
-            // Potresti voler distinguere tra diversi tipi di eccezioni qui
+            logger.error("Failed to send friend request: {}", e.getMessage(), e); // Log the exception
             return new ResponseEntity<>("Failed to send friend request: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-        @PostMapping("/manageRequest")
+
+    @PostMapping("/manageRequest")
     public ResponseEntity<String> manageFriendRequest(@Valid @RequestBody FriendReplyRequest request) {
         try {
             service.manageFriendRequest(request);
-            return new ResponseEntity<>("Friend request sent successfully!", HttpStatus.OK);
+            return new ResponseEntity<>("Friend request managed successfully!", HttpStatus.OK); // Changed message
         } catch (RuntimeException e) {
-            return new ResponseEntity<>("Failed to send friend request: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            logger.error("Failed to manage friend request: {}", e.getMessage(), e); // Log the exception
+            return new ResponseEntity<>("Failed to manage friend request: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @GetMapping("/search") 
+
+    @GetMapping("/search")
     public ResponseEntity<List<UserDTO>> searchUsers(@RequestParam String query) {
         try {
+            logger.debug("Received search request for query: {}", query);
             List<UserDTO> foundUsers = service.searchUsers(query);
+            logger.debug("Found {} users for query: {}", foundUsers.size(), query);
 
-            if (foundUsers.isEmpty()) {   
-                return new ResponseEntity<>(foundUsers, HttpStatus.OK);
+            if (foundUsers.isEmpty()) {
+                // Return 200 OK with an empty list if no users are found
+                return new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
             }
             return new ResponseEntity<>(foundUsers, HttpStatus.OK);
         } catch (IllegalArgumentException e) {
+            logger.warn("Invalid argument for user search: {}", e.getMessage()); // Log the specific warning
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // 400 Bad Request
         } catch (Exception e) {
+            // Log the exception here to see the full stack trace
+            logger.error("An unexpected error occurred during user search with query: {}", query, e);
+            // Return a more informative message if possible, or just the 500 status
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR); // 500 Internal Server Error
         }
     }

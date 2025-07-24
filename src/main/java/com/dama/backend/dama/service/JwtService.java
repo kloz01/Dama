@@ -18,7 +18,7 @@ import io.jsonwebtoken.security.Keys;
 @Service
 
 public class JwtService {
-     private static final String SECRET_KEY= "D5EA55EA74AB3D1D84B25BB8313BDHF654HG95G5U9JI5G5U9HF4H84H9F";
+     private static final String SECRET_KEY= "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
     public String extractUsername(String token)
     {
         return extractClaim(token, Claims::getSubject);
@@ -36,7 +36,7 @@ public class JwtService {
         return Jwts.builder()
         .setClaims(extraClaims).setSubject(userDetails.getUsername())
         .setIssuedAt(new Date(System.currentTimeMillis()))
-        .setExpiration(new Date(System.currentTimeMillis()+1000*60))
+        .setExpiration(new Date(System.currentTimeMillis()+1000*60*60))
         .signWith(getSignInKey(),SignatureAlgorithm.HS256).compact();
     }
     public boolean isTokenValid(String token,UserDetails userDetails)
