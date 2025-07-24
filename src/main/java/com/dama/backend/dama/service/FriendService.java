@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import static java.util.stream.Collectors.toList;
 
+import org.springframework.stereotype.Service;
+
 import com.dama.backend.dama.Request.FriendReplyRequest;
 import com.dama.backend.dama.Request.FriendRequestRequest;
 import com.dama.backend.dama.dto.UserDTO;
@@ -18,6 +20,7 @@ import com.dama.backend.dama.user.User;
 
 import jakarta.persistence.EntityNotFoundException;
 
+@Service
 public class FriendService {
     
     static private FriendRequestStatusRepository statusRepository;
@@ -32,8 +35,8 @@ public void sendFriendRequest(FriendRequestRequest request, User user) {
         User user2 = userRepository.findByUsername(request.getUser2().getUsername())
                       .orElseThrow(() -> new RuntimeException("User with ID " + request.getUser2().getId() + " not found"));
         var friendRequest = FriendRequest.builder()
-                .user1(user)
-                .user2(user2) 
+                .sender(user)
+                .receiver(user2) 
                 .friendRequestStatus(defaultStatus)
                 .build();
         friendRequestRepository.save(friendRequest);
@@ -44,8 +47,8 @@ public void sendFriendRequest(FriendRequestRequest request, User user) {
         if (request.getStatus().getId().equals(2))
         {
             var friend = Friend.builder()
-            .user1(request.getFriendRequest().getUser1())
-            .user2(request.getFriendRequest().getUser2())
+            .user1(request.getFriendRequest().getSender())
+            .user2(request.getFriendRequest().getReceiver())
             .build();
             friendRepository.save(friend);
         }

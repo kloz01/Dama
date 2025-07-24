@@ -1,12 +1,13 @@
 package com.dama.backend.dama.model;
 
 import com.dama.backend.dama.user.User;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType; // Import this
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne; // Import this!
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,19 +19,24 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "friends_request")
+@Table(name = "friends_request") // Matches your requested table name
 public class FriendRequest {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    
-        @JoinColumn(name = "user_1")
-        @JsonBackReference
-    private User user1;
 
-        @JoinColumn(name = "user_2")
-        @JsonBackReference
-    private User user2;
-        @JoinColumn(name = "friend_request_status_id")
+    // User who sent the friend request
+    @ManyToOne // A FriendRequest has ONE sender (User)
+    @JoinColumn(name = "sender_user_id", nullable = false) // Use an explicit and clear column name
+    private User sender;
+
+    // User who receives the friend request
+    @ManyToOne // A FriendRequest has ONE receiver (User)
+    @JoinColumn(name = "receiver_user_id", nullable = false) // Use an explicit and clear column name
+    private User receiver;
+
+    // The status of the friend request (PENDING, ACCEPTED, DECLINED)
+    @ManyToOne // A FriendRequest has ONE FriendRequestStatus
+    @JoinColumn(name = "status_id", nullable = false) // Foreign key to the status table
     private FriendRequestStatus friendRequestStatus;
 }
