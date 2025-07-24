@@ -35,7 +35,7 @@ public class FriendController {
 
     @PostMapping("/sendRequest")
     public ResponseEntity<String> sendFriendRequest(
-            @Valid @RequestBody FriendRequestRequest request,
+            @Valid @RequestBody UserDTO request,
             @AuthenticationPrincipal User currentUser
     ) {
         if (currentUser == null) {

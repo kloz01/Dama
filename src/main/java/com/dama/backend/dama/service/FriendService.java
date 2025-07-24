@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired; // Import Logger
 import org.springframework.stereotype.Service; // Import LoggerFactory
 
 import com.dama.backend.dama.Request.FriendReplyRequest;
-import com.dama.backend.dama.Request.FriendRequestRequest;
 import com.dama.backend.dama.dto.UserDTO;
 import com.dama.backend.dama.model.Friend;
 import com.dama.backend.dama.model.FriendRequest;
@@ -47,12 +46,12 @@ public class FriendService {
         this.userRepository = userRepository;
     }
 
-    public void sendFriendRequest(FriendRequestRequest request, User user) {
+    public void sendFriendRequest(UserDTO request, User user) {
         FriendRequestStatus defaultStatus = statusRepository.findById(1)
                 .orElseThrow(() -> new RuntimeException("FriendRequestStatus with ID 1 (Pending Status) not found. Please ensure it exists in your database."));
 
-        User user2 = userRepository.findByUsername(request.getUser2().getUsername())
-                .orElseThrow(() -> new RuntimeException("User with username " + request.getUser2().getUsername() + " not found."));
+        User user2 = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new RuntimeException("User with username " + request.getUsername() + " not found."));
 
         var friendRequest = FriendRequest.builder()
                 .sender(user)
