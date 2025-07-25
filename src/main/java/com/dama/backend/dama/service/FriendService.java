@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired; // Import Logger
 import org.springframework.stereotype.Service; // Import LoggerFactory
 
 import com.dama.backend.dama.Request.FriendReplyRequest;
+import com.dama.backend.dama.dto.RequestsDTO;
 import com.dama.backend.dama.dto.UserDTO;
 import com.dama.backend.dama.model.Friend;
 import com.dama.backend.dama.model.FriendRequest;
@@ -106,41 +107,33 @@ public class FriendService {
         }
     }
 
-        public List<UserDTO> userSentRequests(User user) {
+    public List<RequestsDTO> userSentRequests(User user) {
         try {
             List<FriendRequest> foundUsers = friendRequestRepository.findBySender(user);
 
-            List<UserDTO> userDTOs = foundUsers.stream()
-                    .map(sender -> UserDTO.builder()
+            List<RequestsDTO> requestDTOs = foundUsers.stream()
+                    .map(sender -> RequestsDTO.builder()
                             .id(sender.getSender().getId())
                             .username(sender.getSender().getUsername())
-                            .name(sender.getSender().getName())
-                            .surname(sender.getSender().getSurname())
-                            .email(sender.getSender().getEmail())
                             .build())
                     .collect(toList());
-            logger.debug("Converted {} users to UserDTOs.", userDTOs.size());
-            return userDTOs;
+            return requestDTOs;
         } catch (Exception e) {
             throw new RuntimeException("Error searching users: " + e.getMessage(), e);
         }
     }
     
-    public List<UserDTO> userRequests(User user) {
+    public List<RequestsDTO> userRequests(User user) {
         try {
             List<FriendRequest> foundUsers = friendRequestRepository.findByReceiver(user);
 
-            List<UserDTO> userDTOs = foundUsers.stream()
-                    .map(sender -> UserDTO.builder()
+            List<RequestsDTO> requestDTOs = foundUsers.stream()
+                    .map(sender -> RequestsDTO.builder()
                             .id(sender.getReceiver().getId())
                             .username(sender.getReceiver().getUsername())
-                            .name(sender.getReceiver().getName())
-                            .surname(sender.getReceiver().getSurname())
-                            .email(sender.getReceiver().getEmail())
                             .build())
                     .collect(toList());
-            logger.debug("Converted {} users to UserDTOs.", userDTOs.size());
-            return userDTOs;
+            return requestDTOs;
         } catch (Exception e) {
             throw new RuntimeException("Error searching users: " + e.getMessage(), e);
         }

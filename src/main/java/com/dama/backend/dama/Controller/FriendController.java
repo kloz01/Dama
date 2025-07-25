@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam; // Import Logger
 import org.springframework.web.bind.annotation.RestController; // Import LoggerFactory
 
 import com.dama.backend.dama.Request.FriendReplyRequest;
+import com.dama.backend.dama.dto.RequestsDTO;
 import com.dama.backend.dama.dto.UserDTO;
 import com.dama.backend.dama.service.FriendService;
 import com.dama.backend.dama.user.User;
@@ -85,9 +86,9 @@ public class FriendController {
         }
     }
     @GetMapping("/pendingRequests")
-    public ResponseEntity<List<UserDTO>> userRequests( @AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<List<RequestsDTO>> userRequests( @AuthenticationPrincipal User currentUser) {
         try {
-            List<UserDTO> foundUsers = service.userRequests(currentUser);
+            List<RequestsDTO> foundUsers = service.userRequests(currentUser);
             if (foundUsers.isEmpty()) {
                 return new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
             }
@@ -100,9 +101,9 @@ public class FriendController {
         }
     }
     @GetMapping("/sentRequests")
-    public ResponseEntity<List<UserDTO>> userSentRequests( @AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<List<RequestsDTO>> userSentRequests( @AuthenticationPrincipal User currentUser) {
         try {
-            List<UserDTO> foundUsers = service.userSentRequests(currentUser);
+            List<RequestsDTO> foundUsers = service.userSentRequests(currentUser);
             if (foundUsers.isEmpty()) {
                 return new ResponseEntity<>(Collections.emptyList(), HttpStatus.OK);
             }
